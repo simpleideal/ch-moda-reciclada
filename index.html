@@ -8,7 +8,7 @@
     <style>
         :root {
             --card-bg: rgba(50, 50, 50, 0.92);
-            --accent: #b0b0b0;
+            --accent: #eca3bd;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --success: #22c55e;
@@ -23,9 +23,9 @@
         }
 
         body {
-            /* La imagen la pone el bloque CLIENTE. Si no carga, queda el fondo oscuro. */
-            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-                        var(--fondo, #1c1c1c);
+            /* El fondo lo pone el bloque CLIENTE. Un color o degradado se usa
+               tal cual; la capa negra solo cubre fotos (ver .fondo-foto). */
+            background: var(--fondo, #0b0b0b);
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -34,8 +34,19 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* El espacio inferior deja la nota por encima del botón flotante de WhatsApp. */
-            padding: 20px 20px calc(110px + env(safe-area-inset-bottom, 0px));
+            padding: 20px;
+        }
+
+        /* Sobre una foto la capa negra deja leer el texto. Sobre un degradado
+           de marca la misma capa apaga el color, así que no se aplica. */
+        body.fondo-foto {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+                              var(--fondo);
+        }
+
+        /* El espacio inferior deja la nota por encima del botón flotante. */
+        body:not(.sin-whatsapp) {
+            padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
         }
 
         .card {
@@ -320,6 +331,11 @@
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
             z-index: 1000;
             transition: transform 0.2s ease;
+        }
+
+        /* display:flex gana al atributo hidden si no se anula a propósito. */
+        .whatsapp-float[hidden] {
+            display: none;
         }
 
         .whatsapp-float:active {
@@ -630,31 +646,31 @@
 
         const CLIENTE = {
             // Se ve en la pestaña del navegador y al compartir el enlace.
-            titulo: 'Datos de Transferencia - Constructora LP',
+            titulo: 'Datos de Transferencia - CH Moda Reciclada',
             // Encabezado de la tarjeta.
-            empresa: 'Constructora y Comercializadora LP SpA',
+            empresa: 'CH Moda Reciclada',
             // Nombre legal completo, tal como está en el SII.
-            razonSocial: 'CONSTRUCTORA Y COMERCIALIZADORA LP SPA',
+            razonSocial: 'WALESKA CONSTANZA HINOSTROZA MUÑOZ',
             // Los campos de nombre de los bancos cortan alrededor de 30 caracteres,
             // así que al formulario va esta versión corta.
-            nombreCorto: 'Constructora LP SpA',
+            nombreCorto: 'Waleska Hinostroza Muñoz',
             // Se escribe una sola vez: los tres formatos se derivan de aquí.
-            rut: '78.040.773-5',
-            // Imagen de fondo. Conviene una foto oscura del rubro del cliente.
-            fondo: "url('https://images.unsplash.com/photo-1591955506264-3f5a6834570a?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Zm9uZG9zJTIwZGUlMjBwYW50YWxsYSUyMGRlJTIwY29uc3RydWNjaSVDMyVCM258ZW58MHx8MHx8fDA%3D')",
+            rut: '18.131.283-1',
+            // Color o degradado de marca. Si es url('...'), se le pone capa negra.
+            fondo: 'radial-gradient(circle at 50% 0%, #3a1526 0%, #0b0b0b 62%)',
             // Color de los botones. Debe contrastar contra texto oscuro.
-            acento: '#b0b0b0'
+            acento: '#eca3bd'
         };
 
         // Quien recibe el comprobante. No cambia según el banco.
         const CONTACTO = {
-            nombre: 'Luis Paillaleve - Constructora LP',
-            telefono: '+56995663306',
-            correo: 'LPCONSTRUCTORA0@GMAIL.COM',
-            // Solo dígitos con código de país, sin + ni espacios.
-            whatsapp: '56995663306',
-            mensajeWhatsapp: 'Hola Luis, envío comprobante de transferencia.',
-            archivoVcard: 'Luis_Paillaleve_Constructora_LP.vcf'
+            nombre: 'Waleska Hinostroza - CH Moda Reciclada',
+            telefono: '',
+            correo: 'waleskahinostroza098@gmail.com',
+            // Solo dígitos con código de país, sin + ni espacios. Vacío: sin botón.
+            whatsapp: '',
+            mensajeWhatsapp: 'Hola Waleska, envío comprobante de transferencia.',
+            archivoVcard: 'Waleska_Hinostroza_CH_Moda_Reciclada.vcf'
         };
 
         /* Las cuentas del cliente, en el orden en que aparecen las pestañas.
@@ -663,15 +679,15 @@
            Con una sola cuenta la barra de pestañas no se muestra. */
         const CUENTAS = [
             {
-                banco: 'bci',
+                banco: 'santander',
                 tipoCuenta: 'Cuenta Corriente',
-                cuenta: '97485799'
+                // Viene de "0 000 82 61668 3"; confirmar si los ceros van todos.
+                cuenta: '000082616683'
             },
             {
-                banco: 'bancoDeChile',
-                tipoCuenta: 'Cuenta Corriente',
-                cuenta: '2602899910',
-                correo: 'joserespaldo4@gmail.com'
+                banco: 'bancoEstado',
+                tipoCuenta: 'Cuenta Pro',
+                cuenta: '81571757796'
             }
         ];
 
@@ -703,6 +719,16 @@
                 color: '#173a79',
                 logo: 'logoBancoDeChile',
                 logoAlto: 18
+            },
+            santander: {
+                nombre: 'Banco Santander',
+                sigla: 'SAN',
+                color: '#ec0000'
+            },
+            bancoEstado: {
+                nombre: 'BancoEstado',
+                sigla: 'BE',
+                color: '#e35205'
             }
         };
 
@@ -1099,9 +1125,9 @@
                 'FN:' + CONTACTO.nombre,
                 'ORG:' + CLIENTE.empresa,
                 'EMAIL:' + CONTACTO.correo,
-                'TEL:' + CONTACTO.telefono,
+                CONTACTO.telefono ? 'TEL:' + CONTACTO.telefono : '',
                 'END:VCARD'
-            ].join('\r\n');
+            ].filter(Boolean).join('\r\n');
 
             const blob = new Blob([vcardData], { type: 'text/vcard' });
             const url = window.URL.createObjectURL(blob);
@@ -1118,9 +1144,22 @@
             document.title = CLIENTE.titulo;
             document.documentElement.style.setProperty('--fondo', CLIENTE.fondo);
             document.documentElement.style.setProperty('--accent', CLIENTE.acento);
-            document.getElementById('botonWhatsapp').href =
-                'https://wa.me/' + CONTACTO.whatsapp +
-                '?text=' + encodeURIComponent(CONTACTO.mensajeWhatsapp);
+
+            // url() es foto: lleva capa negra. Color o degradado se dejan limpios.
+            document.body.classList.toggle('fondo-foto', /^\s*url\(/i.test(CLIENTE.fondo));
+
+            const botonWhatsapp = document.getElementById('botonWhatsapp');
+            if (CONTACTO.whatsapp) {
+                botonWhatsapp.hidden = false;
+                botonWhatsapp.href =
+                    'https://wa.me/' + CONTACTO.whatsapp +
+                    '?text=' + encodeURIComponent(CONTACTO.mensajeWhatsapp);
+            } else {
+                // Sin número no se muestra el de otro cliente ni un enlace vacío.
+                botonWhatsapp.hidden = true;
+                botonWhatsapp.removeAttribute('href');
+            }
+            document.body.classList.toggle('sin-whatsapp', !CONTACTO.whatsapp);
         }
 
         aplicarCliente();
