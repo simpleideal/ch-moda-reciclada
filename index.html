@@ -317,6 +317,42 @@
             text-align: center;
         }
 
+        .redes {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .redes[hidden] {
+            display: none;
+        }
+
+        .red-social {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(236, 163, 189, 0.08);
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .red-social:active {
+            transform: scale(0.94);
+        }
+
+        .red-social svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
         .whatsapp-float {
             position: fixed;
             bottom: calc(24px + env(safe-area-inset-bottom, 0px));
@@ -625,6 +661,8 @@
             Antes de confirmar, revisa que el banco y el número de cuenta hayan
             quedado bien.
         </p>
+
+        <nav class="redes" id="redes" hidden aria-label="Redes sociales"></nav>
     </div>
 
     <a id="botonWhatsapp" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
@@ -700,7 +738,19 @@
             // Solo dígitos con código de país, sin + ni espacios. Vacío: sin botón.
             whatsapp: '56959871537',
             mensajeWhatsapp: 'Hola Waleska, envío comprobante de transferencia.',
-            archivoVcard: 'Waleska_Hinostroza_CH_Moda_Reciclada.vcf'
+            archivoVcard: 'Waleska_Hinostroza_CH_Moda_Reciclada.vcf',
+            // "red" es una clave de ICONOS_REDES. Sin entradas, el pie no se muestra.
+            // En Instagram se omite el ?stkn=: es un token de sesión que caduca.
+            redes: [
+                {
+                    red: 'instagram',
+                    url: 'https://www.instagram.com/constanzahinostroza_/'
+                },
+                {
+                    red: 'facebook',
+                    url: 'https://www.facebook.com/share/1DhdWeCcCi/'
+                }
+            ]
         };
 
         /* Las cuentas del cliente, en el orden en que aparecen las pestañas.
@@ -762,6 +812,21 @@
                 color: '#e35205',
                 logo: 'logoBancoEstado',
                 logoAlto: 18
+            }
+        };
+
+        /* Iconos de redes, en silueta para pintarlas con el acento de la marca.
+           No se usan los colores oficiales de cada red: chocarían con el rosa. */
+        const ICONOS_REDES = {
+            instagram: {
+                nombre: 'Instagram',
+                viewBox: '0 0 24 24',
+                path: 'M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4c0 3.2-2.6 5.8-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8C2 4.6 4.6 2 7.8 2zm0 2C5.7 4 4 5.7 4 7.8v8.4C4 18.3 5.7 20 7.8 20h8.4c2.1 0 3.8-1.7 3.8-3.8V7.8C20 5.7 18.3 4 16.2 4H7.8zM17.5 5.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'
+            },
+            facebook: {
+                nombre: 'Facebook',
+                viewBox: '0 0 24 24',
+                path: 'M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z'
             }
         };
 
@@ -1193,6 +1258,44 @@
                 botonWhatsapp.removeAttribute('href');
             }
             document.body.classList.toggle('sin-whatsapp', !CONTACTO.whatsapp);
+
+            renderRedes();
+        }
+
+        function renderRedes() {
+            const nav = document.getElementById('redes');
+            nav.replaceChildren();
+            const lista = (CONTACTO.redes || []).filter((item) => {
+                return item && item.url && ICONOS_REDES[item.red];
+            });
+
+            if (!lista.length) {
+                nav.hidden = true;
+                return;
+            }
+
+            nav.hidden = false;
+            const NS = 'http://www.w3.org/2000/svg';
+
+            lista.forEach((item) => {
+                const icono = ICONOS_REDES[item.red];
+                const enlace = document.createElement('a');
+                enlace.className = 'red-social';
+                enlace.href = item.url;
+                enlace.target = '_blank';
+                enlace.rel = 'noopener';
+                enlace.setAttribute('aria-label', icono.nombre);
+
+                const svg = document.createElementNS(NS, 'svg');
+                svg.setAttribute('viewBox', icono.viewBox);
+                svg.setAttribute('aria-hidden', 'true');
+                svg.setAttribute('focusable', 'false');
+                const path = document.createElementNS(NS, 'path');
+                path.setAttribute('d', icono.path);
+                svg.appendChild(path);
+                enlace.appendChild(svg);
+                nav.appendChild(enlace);
+            });
         }
 
         aplicarCliente();
